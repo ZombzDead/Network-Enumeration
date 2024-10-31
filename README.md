@@ -34,25 +34,25 @@ Scans the local network, provides IP, MAC, # of responded hosts.
     
     # sudo apt install seclists
 
-  Requirements: Python 3, python3-pip, pipx (optional, but recommended) 
+  Requirements: Python 3, python3-pip, pipx (optional, but recommended)
 
-### Scanning Single Target 
+### Scanning Single Target
 
     # python3 autorecon.py <Target_IP>
 
-### Scanning Multiple Targets 
+### Scanning Multiple Targets
 
     # python3 autorecon.py <Target_IP> <Target_IP/Range> localhost
 
-### Results Location 
+### Results Location
 
     Results for each scan will appear under /opt/tools/Autorecon/results.
     In the results folder it should have the Target IP folder created with additional content.
     The AutoRecon tool will compile Nmap Scans into txt documents or xml's. The report folder will have txt documents with summarized content found.
 
-## LEGION 
+## LEGION
 
-### Initial Install 
+### Initial Install
 
     # cd tools
     # git clone https://github.com/GoVanguard/legion.git
@@ -62,7 +62,7 @@ Scans the local network, provides IP, MAC, # of responded hosts.
 
   Or  
 
-  Docker Install: 
+  Docker Install:
 
     # apt-get update
     # apt-get install -y docker.io python-pip -y
@@ -76,7 +76,7 @@ Scans the local network, provides IP, MAC, # of responded hosts.
 
   Add host(s) to scan seperated by semicolons
 
-### Timing and Performance Options 
+### Timing and Performance Options
 
     - Paranoid
     - Sneaky
@@ -87,269 +87,153 @@ Scans the local network, provides IP, MAC, # of responded hosts.
 
 ## NMAP
 
+### Quick Scan
+  Scan faster than the intense scan by limiting the number of TCP ports scanned to only the top 100 most common TCP ports.
 
-### Quick Scan   
+    # nmap -T4 -F <ip range>
+    # nmap -T4 -F <target> -oX ~/notes/filename.xml
 
-# nmap -T4 -F <ip range> 
+### Quick Scan Plus
+  Add a little bit of version and OS detection and you got the Quick scan plus.
 
-# nmap -T4 -F <target> -oX ~/notes/filename.xml 
+    # nmap -sV -T4 -O -F –version-light <target> -oX ~/notes/filename.xml
 
-Scan faster than the intense scan by limiting the number of TCP ports scanned to only the top 100 most common TCP ports. 
+### Quick Traceroute 
+  Use this option when you need to determine hosts and routers in a network scan. It will traceroute and ping all hosts defined in the target.
 
- 
+    # nmap -sn –traceroute <target> -oX ~/notes/filename.xml
 
-Quick Scan Plus 
+### Regular Scan 
+  Default everything. This means it will issue a TCP SYN scan for the most common 1000 TCP ports, using ICMP Echo request (ping) for host detection.
+  
+    # nmap <target> -oX ~/notes/filename.xml
 
-# nmap -sV -T4 -O -F –version-light <target> -oX ~/notes/filename.xml 
+### Intense Scan    
+  Should be reasonable quick, scan the most common TCP ports. It will make an effort in determining the OS type and what services and their versions are running.
+  
+    # nmap -T4 -A -v <ip range> 
 
-Add a little bit of version and OS detection and you got the Quick scan plus. 
+  This comes from having a pretty fast timing template (-T4) and for using the -A option which will try determine services, versions and OS. With the verbose output (-v) it will also give us a lot of feedback as Nmap makes progress in the scan.
 
- 
+    # nmap -T4 -A -v <target> -oX ~/notes/filename.xml
 
-Quick Traceroute 
+### Intense Scan plus UDP 
+  Same as the regular Intense scan, just that we will also scan UDP ports (-sU). The -sS option is telling Nmap that it should also scan TCP ports using SYN packets. Because this scan includes UDP ports this explicit definition of -sS is necessary.
 
-# nmap -sn –traceroute <target> -oX ~/notes/filename.xml 
+    # nmap -sS -sU -T4 -A -v <target> -oX ~/notes/filename.xml
 
-Use this option when you need to determine hosts and routers in a network scan. It will traceroute and ping all hosts defined in the target. 
+### Intense Scan all TCP Ports 
+  Leave no TCP ports unchecked. Normally Nmap scans a list of 1000 most common protocols, but instead we will in this example scan everything from port 1 to 65535 (max). The 1000 most common protocols listing can be found in the file called nmap-services.
 
- 
+    # nmap -p 1-65535 -T4 -A -v <target> -oX ~/notes/filename.xml
+    
+### Intense Scan no Ping 
+  Just like the other intense scans, however this will assume the host is up. Useful if the target is blocking ping request and you already know the target is up.
 
-Regular Scan 
+    # nmap -T4 -A -v -Pn <target> -oX ~/notes/filename.xml
 
-# nmap <target> -oX ~/notes/filename.xml 
+### Live Host Scan    
+  Nmap will return a list of all detected hosts
 
-Default everything. This means it will issue a TCP SYN scan for the most common 1000 TCP ports, using ICMP Echo request (ping) for host detection. 
+    # nmap -sP <Target IP> -v (-sP is deprecated)
 
- 
+  Will search for all hosts on that network that are currently up
 
-Intense Scan    
+    # nmap -sn <Target IP>
 
-# nmap -T4 -A -v <ip range> 
+### Stealth Scan 
 
-# nmap -T4 -A -v <target> -oX ~/notes/filename.xml 
+    # nmap -sS <IP Address>
 
-Should be reasonable quick, scan the most common TCP ports. It will make an effort in determining the OS type and what services and their versions are running. 
+  Shows the OS Fingerprint/MAC/Open Ports
+    
+    # nmap -sS -O 
 
-This comes from having a pretty fast timing template (-T4) and for using the -A option which will try determine services, versions and OS. With the verbose output (-v) it will also give us a lot of feedback as Nmap makes progress in the scan. 
+  Or  
 
- 
+    # nmap -sS -sV <Target IP> 
 
-Intense Scan plus UDP 
+### Full Connect Scan 
 
-# nmap -sS -sU -T4 -A -v <target> -oX ~/notes/filename.xml 
+    # nmap -sT <IP Address>
+    
+### Service Detection 
 
-Same as the regular Intense scan, just that we will also scan UDP ports (-sU). 
+    # nmap -sV <IP Address>
 
-The -sS option is telling Nmap that it should also scan TCP ports using SYN packets. Because this scan includes UDP ports this explicit definition of -sS is necessary. 
+### Eternal Blue Vuln Scan (mS17-010) 
 
- 
+    #  nmap  -Pn -p445 --open --max-hostgroup 3 --script smb-vuln-ms17-010  <Target IP> 
 
-Intense Scan all TCP Ports 
+  Or 
 
-# nmap -p 1-65535 -T4 -A -v <target> -oX ~/notes/filename.xml 
+    #  nmap -p445 --script smb-vuln-ms17-010 <target>/24 
 
-Leave no TCP ports unchecked. 
+  Or 
 
-Normally Nmap scans a list of 1000 most common protocols, but instead we will in this example scan everything from port 1 to 65535 (max). The 1000 most common protocols listing can be found in the file called nmap-services. 
+    # nmap -Pn -p445 — open — max-hostgroup 3 — script smb-vuln-ms17–010 <target> -oX ~/notes/filename.xml
+    
+### Ping Scan 
+  Does only a ping only on the target, no port scan.
 
- 
-
-Intense Scan no Ping 
-
-# nmap -T4 -A -v -Pn <target> -oX ~/notes/filename.xml 
-
-Just like the other intense scans, however this will assume the host is up. Useful if the target is blocking ping request and you already know the target is up. 
-
- 
-
-Live Host Scan    
-
-# nmap -sP <Target IP> -v (-sP is deprecated)  
-
-Nmap will return a list of all detected hosts 
-
- 
-
- 
-
- 
-
-# nmap -sn <Target IP> 
-
-Will search for all hosts on that network that are currently up 
-
- 
-
-Stealth Scan 
-
-# nmap -sS <IP Address> 
-
-Or  
-
-# nmap -sS -sV <Target IP> 
+    # nmap -sn <target> -oX ~/notes/filename.xml 
 
  
 
- 
+### Slow Comprehensive Scan 
+  This scan has a whole bunch of options in it and it may seem daunting to understand at first. It is however not so complicated once you take a closer look at the options. The scan can be said to be a “Intense scan plus UDP” plus some extras features.
+  It will put a whole lot of effort into host detection, not giving up if the initial ping request fails. It uses three different protocols in order to detect the hosts; TCP, UDP and SCTP.
+  If a host is detected it will do its best in determining what OS, services and versions the host are running based on the most common TCP and UDP services. Also the scan camouflages itself as source port 53 (DNS).
 
-Full Connect Scan 
-
-# nmap -sT <IP Address> 
-
- 
-
- 
-
-Service Detection 
-
-# nmap -sV <IP Address> 
+    # nmap -sS -sU -T4 -A -v -PE -PP -PS80,443 -PA3389 -PU40125 -PY -g 53 –script “default or (discovery and safe)” <target> -oX ~/notes/filename.xml
 
  
 
- 
+### Firewall / IDS Evasion 
 
-Stealth Scan; OS Detection 
+    # nmap -v --script firewall-bypass
 
-# nmap -sS -O 
+## NMAP - NSE
+  
+### Cloning nmap scripts into nmap directory. 
+  Vulscan is a module which enhances nmap to a vulnerability scanner. The nmap option -sV enables version detection per service which is used to determine potential flaws according to the identified product. The data is looked up in an offline version of VulDB.
 
-Shows the OS Fingerprint/MAC/Open Ports 
+    # cd /usr/share/nmap/scripts
+      # git clone https://github.com/vulnersCom/nmap-vulners.git
+      # git clone https://github.com/scipag/nmap-vulscan.git
 
- 
+**Reference:** 
+- https://github.com/scipag/vulscan 
+- https://nmap.org/book/nse.html
 
-Eternal Blue Vuln Scan (mS17-010) 
+### Usage:
 
-#  nmap  -Pn -p445 --open --max-hostgroup 3 --script smb-vuln-ms17-010  <Target IP> 
+    nmap –script [scriptname]-p [port][host]
 
-Or 
+### Scan Target for Vulners Vulnerabilities in NSE 
 
-#  nmap -p445 --script smb-vuln-ms17-010 <target>/24 
+    # nmap --script nmap-vulners -sV <target IP>
 
-Or 
+### Scan Target for Vulscan
+  Can take a lot longer than vulners because it is searching through several databases for vulnerabilities instead of just the one database.
+  
+    # nmap --script vulscan -sV <target IP>
 
-# nmap -Pn -p445 — open — max-hostgroup 3 — script smb-vuln-ms17–010 <target> -oX ~/notes/filename.xml 
+### Webserver Directories Enumeration
+  Enumerate directories used by popular web applications.
 
- 
+    # nmap –script http-enum.nse
 
- 
+### Script Categories 
 
-Ping Scan 
+    # nmap –script [category] [target]
+    # nmap –script [category1,category2, etc]
+    # nmap –script-updatedb
 
-# nmap -sn <target> -oX ~/notes/filename.xml 
+  Script Categories: all, auth, default, discovery, external, intrusive, malware, safe, vuln
 
-Does only a ping only on the target, no port scan. 
-
- 
-
-Slow Comprehensive Scan 
-
-# nmap -sS -sU -T4 -A -v -PE -PP -PS80,443 -PA3389 -PU40125 -PY -g 53 –script “default or (discovery and safe)” <target> -oX ~/notes/filename.xml 
-
-This scan has a whole bunch of options in it and it may seem daunting to understand at first. It is however not so complicated once you take a closer look at the options. The scan can be said to be a “Intense scan plus UDP” plus some extras features. 
-
-It will put a whole lot of effort into host detection, not giving up if the initial ping request fails. It uses three different protocols in order to detect the hosts; TCP, UDP and SCTP. 
-
-If a host is detected it will do its best in determining what OS, services and versions the host are running based on the most common TCP and UDP services. Also the scan camouflages itself as source port 53 (DNS). 
-
- 
-
-Firewall / IDS Evasion 
-
-#nmap -v --script firewall-bypass  
-
- 
-
- 
-
- 
-
-Method 
-
-Command 
-
-Kescription 
-
-References 
-
-Cloning nmap scripts into nmap directory 
-
-# cd /usr/share/nmap/scripts 
-
-# git clone https://github.com/vulnersCom/nmap-vulners.git 
-
-# git clone https://github.com/scipag/nmap-vulscan.git 
-
-Vulscan is a module which enhances nmap to a vulnerability scanner. The nmap option -sV enables version detection per service which is used to determine potential flaws according to the identified product. The data is looked up in an offline version of VulDB. 
-
-https://github.com/scipag/vulscan 
-
-Scan Target for Vulners Vulnerabilities in NSE 
-
-# nmap --script nmap-vulners -sV <target IP> 
-
- 
-
- 
-
-Scan Target for Vulscan 
-
-# nmap --script vulscan -sV <target IP> 
-
-Can take a lot longer than vulners because it is searching through several databases for vulnerabilities instead of just the one database. 
-
- 
-
-Webserver Directories Enumeration 
-
-# nmap –script http-enum.nse  
-
-Enumerate directories used by popular web applications. 
-
- 
-
-Script Categories 
-
-# nmap –script [category] [target] 
-
- 
-
-# nmap –script [category1,category2, etc] 
-
- 
-
-# nmap –script-updatedb 
-
-Script Categories: all, auth, default, discovery, external, intrusive, malware, safe, vuln 
-
-https://nmap.org/book/nse.html 
-
- 
-
- 
-
- 
-
- 
-
- 
-
-nmap –script [scriptname]-p [port][host] 
-
- 
-
- 
-
-
- This script is simply a wrapper for NMAP and Masscan. Install them from your favorite package manager, or install from source. 
-
- 
-
-Method 
-
-Command 
-
-Description 
-
-References 
+## SPOONMAP
+   This script is simply a wrapper for NMAP and Masscan. Install them from your favorite package manager, or install from source.
 
 Initial install 
 
